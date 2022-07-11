@@ -22,6 +22,10 @@ jobs:
             target: windows
 
           - platform: windows-latest
+            python-version: '3.8'
+            python-bin-path: 'C:\\hostedtoolcache\\windows\\Python\\3.8.10\\x64\\python3.exe'
+
+          - platform: windows-latest
             python-version: '3.10'
             python-bin-path: 'C:\\hostedtoolcache\\windows\\Python\\3.10.5\\x64\\python3.exe'
 
@@ -50,6 +54,8 @@ jobs:
           echo "${{matrix.platform}} python ${{matrix.python-version}}"
           echo "TARGET=${{matrix.target}}"
           echo "PYTHON_BIN_PATH=$PYTHON_BIN_PATH"
+          echo "python3=$(which python3)"
+          echo "python=$(which python)"
           bash tensorflow/lite/tools/pip_package/build_pip_package_with_bazel.sh ${{ matrix.target }}
         shell: bash
 
