@@ -16,6 +16,13 @@ jobs:
       matrix:
         platform: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ['3.8', '3.9', '3.10']
+        include:
+          - platform: windows-latest
+            target: windows
+          - platform: ubuntu-latest
+            target: ''
+          - platform: macos-latest
+            target: ''
 
     runs-on: ${{ matrix.platform }}
 
@@ -37,7 +44,7 @@ jobs:
 
       - name: Build wheel
         run: |
-          bash tensorflow/lite/tools/pip_package/build_pip_package_with_bazel.sh
+          bash tensorflow/lite/tools/pip_package/build_pip_package_with_bazel.sh ${{ matrix.target }}
         shell: bash
 
       # Enable tmate debugging of manually-triggered workflows if the input option was provided
