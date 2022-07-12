@@ -66,7 +66,7 @@ jobs:
           if-no-files-found: error
           retention-days: 1
           name: build-tflite-${{ matrix.tensorflow-version }}-${{ matrix.platform }}-python${{ matrix.python-version }}
-          path: /home/runner/work/tflite-runtime-wheels/tflite-runtime-wheels/tensorflow/lite/tools/pip_package/gen/tflite_pip/python3
+          path: tensorflow/lite/tools/pip_package/gen/tflite_pip/python3
 
 
   publish:
