@@ -3,6 +3,10 @@ name: Build
 on:
   workflow_dispatch:
     inputs:
+      pypi-name:
+        description: 'Name to use for the package on PyPI'
+        required: false
+        default: 'pharmpy-tflite-runtime'
       tensorflow-version:
         description: 'TensorFlow version to build (for instance v2.9.1)'
         required: true
@@ -43,6 +47,10 @@ jobs:
 
       - name: Set TENSORFLOW_TARGET
         run: echo "TENSORFLOW_TARGET=${{ matrix.tensorflow-target }}" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Set WHEEL_PROJECT_NAME
+        run: echo "WHEEL_PROJECT_NAME=${{ inputs.pypi-name }}" >> $GITHUB_ENV
         shell: bash
 
       - name: Environment information
