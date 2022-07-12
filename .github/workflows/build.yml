@@ -94,7 +94,8 @@ jobs:
       - name: Create dist folder
         run: |
           mkdir dist
-          cp -l artifacts/*/dist/* dist
+          cp -l artifacts/*/dist/*.whl dist
+          cp -l artifacts/*-python3.10/dist/*.tar.gz dist
 
       - name: List dist objects
         run: tree dist
