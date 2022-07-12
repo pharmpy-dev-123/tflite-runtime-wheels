@@ -42,7 +42,7 @@ jobs:
         run: echo "PYTHON_BIN_PATH=$(which python)" >> $GITHUB_ENV
         shell: bash
 
-      - name: Set PYTHON_BIN_PATH
+      - name: Set TENSORFLOW_TARGET
         run: echo "TENSORFLOW_TARGET=${{ matrix.tensorflow-target }}" >> $GITHUB_ENV
         shell: bash
 
