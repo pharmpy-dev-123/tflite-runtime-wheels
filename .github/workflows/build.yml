@@ -2,10 +2,10 @@ name: Build
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-  pull_request:
+    inputs:
+      tensorflow-version:
+        description: 'TensorFlow version to build (for instance v2.9.1)'
+        required: true
 
 jobs:
 
@@ -13,7 +13,6 @@ jobs:
 
     strategy:
       matrix:
-        tensorflow-version: ['v2.9.1']
         platform: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ['3.8', '3.9', '3.10']
         include:
@@ -36,7 +35,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: tensorflow/tensorflow
-          ref: refs/tags/${{ matrix.tensorflow-version }}
+          ref: refs/tags/${{ inputs.tensorflow-version }}
 
       - name: Set PYTHON_BIN_PATH
         run: echo "PYTHON_BIN_PATH=$(which python)" >> $GITHUB_ENV
@@ -65,7 +64,7 @@ jobs:
         with:
           if-no-files-found: error
           retention-days: 1
-          name: build-tflite-${{ matrix.tensorflow-version }}-${{ matrix.platform }}-python${{ matrix.python-version }}
+          name: build-tflite-${{ inputs.tensorflow-version }}-${{ matrix.platform }}-python${{ matrix.python-version }}
           path: tensorflow/lite/tools/pip_package/gen/tflite_pip/python3
 
 
@@ -73,13 +72,30 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Install tree
-        run: sudo apt-get -y install tree
-
       - name: Fetch artifacts
         uses: actions/download-artifact@v3
         with:
           path: artifacts
 
+      - name: Install tree
+        run: sudo apt-get -y install tree
+
       - name: List artifacts
         run: tree artifacts
+
+      - name: Create dist folder
+        run: |
+          mkdir dist
+          cp -l artifacts/*/dist/* dist
+
+      - name: List dist objects
+        run: tree dist
+
+      - name: Publish a Python distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          verbose: true
+          print_hash: true
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          packages_dir: dist/
