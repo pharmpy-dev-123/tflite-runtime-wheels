@@ -2,11 +2,10 @@ name: Build
 
 on:
   workflow_dispatch:
-    inputs:
-      debug:
-        description: 'Run the build with tmate debugging enabled'
-        required: false
-        default: false
+  push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
 
@@ -16,18 +15,10 @@ jobs:
       matrix:
         platform: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ['3.8', '3.9', '3.10']
+        tensorflow-ref: ['refs/tags/v2.9.1']
         include:
-
           - platform: windows-latest
-            target: windows
-
-          - platform: windows-latest
-            python-version: '3.8'
-            python-bin-path: 'C:\\hostedtoolcache\\windows\\Python\\3.8.10\\x64\\python3.exe'
-
-          - platform: windows-latest
-            python-version: '3.10'
-            python-bin-path: 'C:\\hostedtoolcache\\windows\\Python\\3.10.5\\x64\\python3.exe'
+            tensorflow-target: windows
 
     runs-on: ${{ matrix.platform }}
 
@@ -45,24 +36,27 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: tensorflow/tensorflow
-          ref: refs/tags/v2.9.1
+          ref: ${{ matrix.tensorflow-ref }}
 
-      - name: Build wheel
-        env:
-          PYTHON_BIN_PATH: ${{matrix.python-bin-path}}
-        run: |
-          echo "${{matrix.platform}} python ${{matrix.python-version}}"
-          echo "TARGET=${{matrix.target}}"
-          echo "PYTHON_BIN_PATH=$PYTHON_BIN_PATH"
-          echo "python3=$(which python3)"
-          echo "python=$(which python)"
-          bash tensorflow/lite/tools/pip_package/build_pip_package_with_bazel.sh ${{ matrix.target }}
+      - name: Set PYTHON_BIN_PATH
+        run: echo "PYTHON_BIN_PATH=$(which python)" >> $GITHUB_ENV
         shell: bash
 
-      # Enable tmate debugging of manually-triggered workflows if the input option was provided
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        if: github.event_name == 'workflow_dispatch' && inputs.debug && (success() || failure())
-        with:
-          limit-access-to-actor: true
-        timeout-minutes: 15
+      - name: Set PYTHON_BIN_PATH
+        run: echo "TENSORFLOW_TARGET=${{ matrix.tensorflow-target }}" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Environment information
+        run: |
+          echo "platform: ${{matrix.platform}}"
+          echo "python version: ${{matrix.python-version}}"
+          echo "TENSORFLOW_TARGET=$TENSORFLOW_TARGET"
+          echo "PYTHON_BIN_PATH=$PYTHON_BIN_PATH"
+          echo "which python3: $(which python3)"
+          echo "which python: $(which python)"
+        shell: bash
+
+      - name: Build wheel
+        run: |
+          bash tensorflow/lite/tools/pip_package/build_pip_package_with_bazel.sh
+        shell: bash
