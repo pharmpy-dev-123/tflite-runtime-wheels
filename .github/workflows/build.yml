@@ -97,6 +97,16 @@ jobs:
           cp -l artifacts/*/dist/*.whl dist
           cp -l artifacts/*-python3.10/dist/*.tar.gz dist
 
+      - name: Install auditwheel
+        run: sudo pip install auditwheel
+
+      - name: Repair Linux wheels
+        run: |
+          pushd dist
+          for wheel in *-linux_x86_64.whl; do auditwheel repair $wheel; done
+          rm *-linux_x86_64.whl
+          popd
+
       - name: List dist objects
         run: tree dist
 
